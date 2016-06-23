@@ -1,0 +1,11 @@
+doctype html
+html
+  head
+    title Passport login
+    link(rel='stylesheet', href='//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css')
+    link(rel='stylesheet', href='//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css')
+  body
+    form(action='/auth/todoist', method='get')
+      button.btn.btn-warning.btn-lg(type='submit') Login In to ToDoIst
+    form(action='/auth/twitter', method='get')
+      button.btn.btn-warning.btn-lg(type='submit') Twitter

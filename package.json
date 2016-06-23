@@ -1,0 +1,35 @@
+{
+  "name": "time-tracker",
+  "version": "1.0.0",
+  "description": "integrates APIs of popular to do functions to add time tracking functionality",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mattroconnor/time-tracker.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mattroconnor/time-tracker/issues"
+  },
+  "homepage": "https://github.com/mattroconnor/time-tracker#readme",
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.15.2",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.14.0",
+    "express-session": "^1.13.0",
+    "jade": "^1.11.0",
+    "jquery": "^3.0.0",
+    "mongoose": "^4.5.1",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
+    "passport-twitter": "^1.0.4",
+    "request": "^2.72.0",
+    "validator": "^5.4.0"
+  }
+}
