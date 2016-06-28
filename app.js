@@ -1,9 +1,3 @@
-/*Notes to self:
--when migrating to production must update links:
-  - mongoose.connect
--possibly need to update default session secret, though passport may overwrite this anyway
-*/
-
 var express = require('express');
 var path = require('path');
 var mongoose = require('mongoose');
@@ -24,9 +18,18 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+//MIDDLEWARE FOR TROUBLESHOOTING
+app.use(function(req,res,next){ //console logs url calls
+  console.log(req.method + " " + req.url);
+  next();
+});
+
 //View Engine
 app.set( 'views', path.join(__dirname, 'views'));
 app.set( 'view engine', 'jade');
+
+//Serve public files
+app.use(express.static(path.join(__dirname, 'public')));
 
 //Initialize session
 app.use(session( { secret: 'IwantmyMTV'}));
@@ -47,3 +50,4 @@ require('./APIkeys/config.json')
 app.listen( 3001, function(){
     console.log('listening on port 3001');
 });
+

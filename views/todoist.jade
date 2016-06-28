@@ -1,0 +1,150 @@
+extends layout.jade
+block content
+  nav.navbar-custom
+    a(href='/todoist') Main
+    a(href='/todoist') Analyze
+  div.row
+    div.col-xs-10.col-xs-offset-1
+      .clock(style='margin:2em;')
+      .message
+      script(type='text/javascript').
+        var clock;
+        $(document).ready(function() {
+        var clock;
+        clock = $('.clock').FlipClock({
+          clockFace: 'HourlyCounter',
+          autoStart: false,
+          callbacks: {
+            interval: function () {
+              window.elapsed = clock.getTime().time;
+              //Insert function to send an ajax call to save to database every 60 seconds (if elapsed % 60=0)
+            }
+          }
+        });
+        elapsed = 0;
+        clock.setTime(0);
+        clock.setCountdown(false);
+        var tasksWorking = 0;
+        //Task on click
+        $('#projects').on('click','.task',function(e){
+          //We only want this to trigger if either no tasks are currently working or we click the same task currently working
+          var validClick = false;
+          // case of no tasks working
+          if (tasksWorking === 0){
+            validClick = true;
+            tasksWorking = 1
+            $(this).addClass('working')
+            var clockStatus = 'wasStopped'
+          }
+          //case of one task working and we click on it
+          else if ($(this).hasClass('working')){
+            validClick = true;
+            tasksWorking = 0;
+            $(this).removeClass('working')
+            var clockStatus = 'wasRunning';
+          }
+          //case of one task working and we click another task
+          else{
+          //Do Nothing
+          }
+
+          if (validClick){
+            //ping the database to check database, if does not exist save to database, if does exist check for time already stored and set to stored time value and elapsed value
+
+            //- $.ajax({
+            //-   url: '/todoist/workingtask',
+            //-   method: 'GET',
+            //-   success: function (res) {
+            //-   //figure out a way to reference the working task
+            //-   },
+            //-   error: function (res) {
+            //-     console.log('error')
+            //-   }
+            //- });
+
+            //Now that time value is correct, start/stop the clock and/or reset elapsed time
+            if (clockStatus == 'wasRunning'){
+              clock.stop();
+              clock.setTime(0);
+              elapsed = 0;
+            } else{
+              clock.start();
+            }
+        }
+
+        });
+        });
+
+    div.col-xs-10.col-xs-offset-1.selector
+      p#labelArea
+        a(href='#') Projects
+      div#projects.col-xs-12
+
+  script.
+    var projectsArray = [];
+    var eachProjectItem = [];
+    var $projectArea = $('#projects')
+
+    $.ajax({
+      url: '/api/todoist/projects',
+      method: 'GET',
+      success: function (res) {
+        var projectList = res;
+        $('#projects').empty();
+
+        for (i=0; i < projectList.length; i++){
+          eachProjectItem = [projectList[i].name,projectList[i].id];
+          projectsArray.push(eachProjectItem);
+          var $newProject = $('<div class="col-xs-4 project">'+projectList[i].name+'</div>');
+          $projectArea.append($newProject);
+        }
+        console.log(projectList)
+      },
+      error: function (res) {
+        console.log('error')
+      }
+    });
+
+    $('#projects').on('click','.project',function(e){
+      var projectName = $(this).html();
+      for (i=0; i < projectsArray.length; i++){
+        if(projectName == projectsArray[i][0]){
+          var projectID = projectsArray[i][1];
+          break
+        }
+      }
+
+      var $newLabel = $('<span id="taskLabel"> >> '+projectName+'</span>');
+      $('#labelArea').append($newLabel);
+
+
+      //now have projectID, need to return tasks and find all which have a projectID matching the ID
+      $.ajax({
+        url: '/api/todoist/tasks',
+        method: 'GET',
+        success: function (res) {
+          //return tasks, find project id in projectsArray based on
+          var taskList = res;
+          console.log(projectName)
+          console.log(projectID)
+          $('#projects').empty();
+
+          for (i=0; i < taskList.length; i++){
+            if (taskList[i].project_id === projectID){
+              var $newTask = $('<div class="col-xs-6 task">'+taskList[i].content+'</div>');
+              $projectArea.append($newTask);
+            }
+          }
+        },
+        error: function (res) {
+          console.log('error')
+        }
+      });
+    });
+
+
+
+//- script.
+//-   var user = #{user}
+
+//- script(src="../APIlinks.js")

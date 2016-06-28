@@ -1,11 +1,16 @@
-doctype html
-html
-  head
-    title Passport login
-    link(rel='stylesheet', href='//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css')
-    link(rel='stylesheet', href='//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css')
-  body
-    form(action='/auth/todoist', method='get')
-      button.btn.btn-warning.btn-lg(type='submit') Login In to ToDoIst
-    form(action='/auth/twitter', method='get')
-      button.btn.btn-warning.btn-lg(type='submit') Twitter
+extends layout.jade
+block content
+  div.row
+    div.col-xs-6.col-xs-offset-3
+      h4 The Future of Task Management
+    div.col-xs-6.col-xs-offset-3
+        p What is Time Hacker?
+        p.nobreak Time Hacker is a plugin for existing task management solutions such as Trello and Todoist.
+        p Time Hacker adds the ability to seamlessly track and visualize which projects or responsibilities your time is being spent on within your native task management app of choice.
+    div.col-xs-6.col-xs-offset-3
+      div.col-xs-8
+        form.center(action='/auth/todoist', method='get')
+          button.btn.btn-warning.outline.btn-lg(type='submit') Link to Todoist
+      div.col-xs-8
+        form.center(action='/auth/todoist', method='get')
+          button.btn.btn-primary.outline.btn-lg(type='submit') Link to Trello &nbsp

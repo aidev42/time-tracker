@@ -1,0 +1,173 @@
+/*BEGIN initialization of fonts, and keyframe animations*/
+  @font-face { font-family: Alien-Encounters; src: url('../fonts/Alien-Encounters-Regular.ttf'); }
+  @font-face { font-family: Alien-Encounters-Italic; font-weight: bold; src: url('../fonts/Alien-Encounters-Italic.ttf');}
+
+@keyframes animatedBackground {
+  from { background-position: 0 0; }
+  to { background-position: -100% 0; }
+}
+
+body{
+  background: url(../images/background3.jpeg) no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  /*animation: animatedBackground 0s linear infinite;*/
+}
+
+.dimmer{
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  top: 0;
+  right:0;
+  background: rgba(0,0,0,.7);
+  background-size: cover;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.selector{
+  box-shadow: 10px 10px 5px rgba(0,0,0,.6), inset 0px 0px 20px 10px rgba(0,0,0,.6);
+}
+
+h1, h4{
+  text-align: center;
+}
+h1{
+  margin-top: 2%;
+  margin-bottom: 0;
+  font-family: Alien-Encounters-Italic;
+  color: red;
+}
+
+h4{
+  margin: 0 0;
+  margin-bottom: 5%;
+}
+
+footer{
+  position:relative;
+  bottom:0;
+  width:100%;
+  text-align: center;
+  max-height: 5%;
+  clear: both;
+}
+
+.nobreak{
+  margin-bottom: 1em;
+}
+
+.project, .task{
+  border-radius: 25px;
+  background: #73AD21;
+  margin-right: 1%;
+  margin-bottom: 2%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+}
+.project{
+  width: 49%;
+}
+
+.task{
+  width: 99%
+}
+
+.project:hover, .task:hover, .working{
+  background: red;
+}
+
+nav a{
+  margin-left: 30%;
+}
+
+
+/*BUTTONS*/
+.btn.outline {
+  min-width: 100%;
+  background: none;
+  padding: 12px 22px;
+  margin-right: 10%;
+  margin-top: 20%;
+}
+.btn-primary.outline {
+  border: 2px solid #0099cc;
+  color: #0099cc;
+}
+.btn-primary.outline:hover, .btn-primary.outline:focus, .btn-primary.outline:active, .btn-primary.outline.active, .open > .dropdown-toggle.btn-primary {
+  color: #33a6cc;
+  border-color: #33a6cc;
+}
+.btn-primary.outline:active, .btn-primary.outline.active {
+  border-color: #007299;
+  color: #007299;
+  box-shadow: none;
+}
+.btn-success.outline {
+  border: 2px solid #00bf6f;
+  color: #00bf6f;
+}
+.btn-success.outline:hover, .btn-success.outline:focus, .btn-success.outline:active, .btn-success.outline.active, .open > .dropdown-toggle.btn-success {
+  border-color: #39bf87;
+  color: #39bf87;
+}
+.btn-success.outline:active, .btn-success.outline.active {
+  border-color: #008c52;
+  color: #008c52;
+  box-shadow: none;
+}
+.btn-info.outline {
+  border: 2px solid #31cde8;
+  color: #31cde8;
+}
+.btn-info.outline:hover, .btn-info.outline:focus, .btn-info.outline:active, .btn-info.outline.active, .open > .dropdown-toggle.btn-info {
+  border-color: #5fd4e8;
+  color: #5fd4e8;
+}
+.btn-info.outline:active, .btn-info.outline.active {
+  border-color: #35a2b5;
+  color: #35a2b5;
+  box-shadow: none;
+}
+.btn-warning.outline {
+  border: 2px solid #eb8f34;
+  color: #eb8f34;
+}
+.btn-warning.outline:hover, .btn-warning.outline:focus, .btn-warning.outline:active, .btn-warning.outline.active, .open > .dropdown-toggle.btn-warning {
+  border-color: #eba259;
+  color: #eba259;
+}
+.btn-warning.outline:active, .btn-warning.outline.active {
+  border-color: #b87430;
+  color: #b87430;
+  box-shadow: none;
+}
+.btn-danger.outline {
+  border: 2px solid #f25454;
+  color: #f25454;
+}
+.btn-danger.outline:hover, .btn-danger.outline:focus, .btn-danger.outline:active, .btn-danger.outline.active, .open > .dropdown-toggle.btn-danger {
+  border-color: #f26d6d;
+  color: #f26d6d;
+}
+.btn-danger.outline:active, .btn-danger.outline.active {
+  border-color: #bf4343;
+  color: #bf4343;
+  box-shadow: none;
+}
+
+
+/*Clock*/
+
+.clock{
+zoom: 0.5;
+-moz-transform: scale(0.5)
+}

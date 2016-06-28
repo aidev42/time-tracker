@@ -3,15 +3,21 @@ var bcrypt   = require('bcrypt-nodejs');
 
 // define the schema for user
 var userSchema = mongoose.Schema({
-    todoist          : {
-        access_token: String
-    }
+  todoist          : {
+      full_name: String,
+      email: String,
+      id: Number,
+      inbox_project: Number,
+      access_token: String,
+      sync_token: String,
+      tasks: Object //array of object with task id, task content, project name, project id and time elapsed
+  }
 });
 
 // methods ======================
 // generating a hash
 userSchema.methods.generateHash = function(password) {
-    return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
+    return bcrypt.hashSync(password, bcrypt.genSaltSync(10), null);
     console.log('success')
 };
 
