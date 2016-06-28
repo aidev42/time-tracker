@@ -1,4 +1,7 @@
 var request = require('request')
+// Load models
+var User = require('../model/user');
+var Task = require('../model/tasks');
 
 module.exports = function(app, passport){
 
@@ -21,6 +24,66 @@ module.exports = function(app, passport){
     global.backendUser = req.user.todoist;
     global.frontendUser = todoistUser(req.user.todoist);
     res.render('todoist', {user: frontendUser});
+  });
+
+  //Check/update task and time data
+  app.post('/todoist/workingtask', function(req, res){
+    console.log('now in routes')
+    console.log('backendUser.id')
+    //check database to see if tasks exists. if not: save to database. If yes, check existing timeElapsed value and pass it back to the frontend
+    User.findOne({
+      //ADD AUTHENTIFICATION
+      //_id: req.user._id,
+      tasks: {$elemMatch: {taskID: req.body.task.id}}
+    },
+    function(err, user){
+      if(err){ return err; }
+
+      if(!user){
+        console.log('creating new task')
+        //create new task within current backendUser
+        User.findOne({
+          'todoist.id': backendUser.id
+        },
+        function(err,user){
+          if(err){ return err; }
+          if(!user) { console.log('couldnt find any user')}
+
+          else{
+            var task = new Task({
+              'task_name': req.body.task.content,
+              'taskID': req.body.task.id,
+              'project_name': req.body.projectName,
+              'projectID': req.body.task.project_id,
+              'ownerID': req.body.task.user_id,
+              'timeElapsed': req.body.elapsed,
+              'estimatedTime': 0
+          })}
+          task.save(function(err){
+            if(err) console.log('error saving task' + err);
+          });
+          console.log('task should have been saved')
+          console.log('logging tasks: '+ user.tasks)
+        }
+        )
+      }
+      //Task already exists since user was found by child taskID
+      else{
+        //Need to get timeElapsed property from specific task
+        console.log('getting existin task data')
+        var userTasks = user.tasks;
+        var elapsed = 0;
+        for (i=0; i< userTasks.length; i++){
+          if (userTasks[i].taskID == req.body.task.id){
+            elapsed = userTasks[i].timeElapsed;
+            break
+          }
+        }
+        //now return this to the front end
+        console.log('this much time has gone:' + elapsed)
+        res.json(elapsed)
+      }
+    });
   });
 
   function todoistUser(userInput){

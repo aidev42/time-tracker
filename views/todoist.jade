@@ -1,6 +1,7 @@
 extends layout.jade
 block content
   nav.navbar-custom
+    span Welcome, #{user.full_name}
     a(href='/todoist') Main
     a(href='/todoist') Analyze
   div.row
@@ -49,20 +50,38 @@ block content
           }
 
           if (validClick){
-            //ping the database to check database, if does not exist save to database, if does exist check for time already stored and set to stored time value and elapsed value
+            //pings the database to check database, if does not exist save to database, if does exist check for time already stored and set to stored time value and elapsed value
 
-            //- $.ajax({
-            //-   url: '/todoist/workingtask',
-            //-   method: 'GET',
-            //-   success: function (res) {
-            //-   //figure out a way to reference the working task
-            //-   },
-            //-   error: function (res) {
-            //-     console.log('error')
-            //-   }
-            //- });
+            //which task was clicked?
+            var taskName = $(this).html();
+            for (i=0; i < taskList.length; i++){
+              if(taskName == taskList[i].content){
+                var clickedTask = taskList[i];
+                break
+              }
+            }
 
-            //Now that time value is correct, start/stop the clock and/or reset elapsed time
+            //send the task object and project object back
+            console.log(clickedTask)
+            $.ajax({
+              url: '/todoist/workingtask',
+              method: 'POST',
+              data: {
+                task: clickedTask,
+                projectName: projectName,
+                timeElapsed: elapsed
+                //- TO DO: estimatedTime: XXX build in prompt at time of click for user to input answer
+              },
+              success: function (res) {
+                //TO DO: on success get the stored elapsed time and set the clock time
+                console.log('front end got this much time back'+ res)
+              },
+              error: function (res) {
+                console.log('error')
+              }
+            });
+
+            // PUT THIS IN AJAX SUCCESS- Now that time value is correct, start the clock or (stop and reset elapsed time)
             if (clockStatus == 'wasRunning'){
               clock.stop();
               clock.setTime(0);
@@ -70,14 +89,14 @@ block content
             } else{
               clock.start();
             }
-        }
+          }
 
         });
         });
 
     div.col-xs-10.col-xs-offset-1.selector
       p#labelArea
-        a(href='#') Projects
+        a(href='/todoist') Projects
       div#projects.col-xs-12
 
   script.
@@ -106,7 +125,7 @@ block content
     });
 
     $('#projects').on('click','.project',function(e){
-      var projectName = $(this).html();
+      window.projectName = $(this).html();
       for (i=0; i < projectsArray.length; i++){
         if(projectName == projectsArray[i][0]){
           var projectID = projectsArray[i][1];
@@ -124,9 +143,7 @@ block content
         method: 'GET',
         success: function (res) {
           //return tasks, find project id in projectsArray based on
-          var taskList = res;
-          console.log(projectName)
-          console.log(projectID)
+          window.taskList = res;
           $('#projects').empty();
 
           for (i=0; i < taskList.length; i++){

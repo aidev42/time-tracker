@@ -86,7 +86,7 @@ footer{
 }
 
 nav a{
-  margin-left: 30%;
+  margin-left: 20%;
 }
 
 
@@ -96,7 +96,7 @@ nav a{
   background: none;
   padding: 12px 22px;
   margin-right: 10%;
-  margin-top: 20%;
+  margin-top: 10%;
 }
 .btn-primary.outline {
   border: 2px solid #0099cc;
