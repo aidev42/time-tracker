@@ -13,9 +13,9 @@ var taskSchema = mongoose.Schema({
   projectID: Number,
   //owner's user ID
   ownerID: Number,
-  //time elapsed
+  //time elapsed stored in seconds
   timeElapsed: Number,
-  //estimated time
+  //estimated time stored in seconds
   estimatedTime: Number
 })
 

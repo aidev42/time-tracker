@@ -21,6 +21,7 @@ module.exports = function(app, passport){
 
   //Load Todoist Pages
   app.get('/todoist', function(req, res){
+    // Does this save backendUser to ALL sessions?
     global.backendUser = req.user.todoist;
     global.frontendUser = todoistUser(req.user.todoist);
     res.render('todoist', {user: frontendUser});
@@ -28,6 +29,19 @@ module.exports = function(app, passport){
 
   app.get('/todoistanalyze', function(req, res){
     res.render('todoistanalyze', {user: frontendUser});
+  });
+
+  app.get('/todoist/gettaskdata',function(req,res){
+    Task.find({
+     //find all tasks with the owner id which matches current backend user id
+     'ownerID': backendUser.id
+    },
+    function(err, taskArray){
+      if(err){ return err; }
+      else{
+        res.json(taskArray)
+      }
+    });
   });
 
   //Update store elasped time value every X seconds
@@ -86,7 +100,7 @@ module.exports = function(app, passport){
     console.log('this is the seen task id number: ' +req.body.task.id)
     var needEstimation = 0;
     Task.findOne({
-      //ADD AUTHENTIFICATION
+      //ADD AUTHENTIFICATION- can easily add by checking in incoming tasks's owner ID matches current backend user ID
       //_id: req.user._id,
       'taskID': req.body.task.id
     },

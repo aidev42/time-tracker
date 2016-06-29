@@ -4,4 +4,198 @@ block content
     span Welcome, #{user.full_name}
     a(href='/todoist') Main
     a(href='/todoistanalyze') Analyze
-  p CREATE A BAR CHART WHERE EACH BAR IS A PROJECT, AND EACH PROJECT VALUE IS RATIO OF REALIZED TIME TO ESTIMATED IN THAT PROJECT, ALSO INCLUDE A TOTAL PROJECT
+  canvas#ratioChart(width='100%', height='50%')
+  canvas#rawChart(width='100%', height='50%')
+  script(type='text/javascript', src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.6/Chart.js')
+  script.
+    //send an ajax to get ALL of users tasks stored in mongodb
+    $.ajax({
+      url: '/todoist/gettaskdata',
+      method: 'GET',
+      data: {
+      },
+      success: function(res){
+        var taskArray = res;
+        generateCharts(taskArray)
+      },
+      error: function(res){
+        console.log('ajax error')
+      }
+    })
+
+    function generateCharts(taskArray){
+
+      //loop through tasks and create a object called projectLabels, keys are project names, values are arrays of tasks
+      //then loop through each project key name, this is instead of looping through all tasks for all projects
+
+      var projectsAndTasks = {
+
+      }
+
+      //DATA SERIES WE NEED TO GET FOR CHARTS
+      var conversionFactor = 3600; //data is stored in seconds, this sets what to change raw time values into: , 60 is minutes, 3600 is hours etc
+      var projectArray = []; //used as the label array for per project chart views
+      var dataElapsed = []; //sum of time elapsed per label
+      var dataEstimated = []; //sum of time estimated per label
+      var dataRatio = []; //ratio of elapsed to estimated per label
+      var dataTotalElapsed = 0; //sum of time elapsed for ALL labels
+      var dataTotalEstimated = 0; //sum of time estimated for ALL labels
+
+      for (t=0; t<taskArray.length;t++){
+        var task = taskArray[t];
+        var key  = task.project_name;
+        if (typeof projectsAndTasks[key] === "undefined") {
+          projectsAndTasks[key] =  [task];
+          projectArray.push(key);
+        } else {
+          projectsAndTasks[key].push(task);
+        }
+      }
+
+      //We now have an object of project names and tasks, and an array of all project names. Loop through all project names and grab out of the object the tasks (and the task data)
+      for (p =0; p<projectArray.length; p++){
+        var tasksInProject = []
+        tasksInProject = projectsAndTasks[projectArray[p]]
+        var projectElapsed = 0;
+        var projectEstimated = 0;
+        for (t=0; t< tasksInProject.length; t++){
+          projectElapsed += tasksInProject[t].timeElapsed / conversionFactor;
+          projectEstimated += tasksInProject[t].estimatedTime / conversionFactor;
+          }
+        //For this project we've now summed up all task level data so store this data and update totals
+        dataElapsed.push(projectElapsed);
+        dataEstimated.push(projectEstimated);
+        dataTotalElapsed += projectElapsed;
+        dataTotalEstimated += projectEstimated;
+        }
+
+      //Add TOTAL label and data
+      projectArray.push('Total');
+      dataElapsed.push(dataTotalElapsed);
+      dataEstimated.push(dataTotalEstimated);
+
+      //Construct the ratio data series
+      for (p =0; p<projectArray.length; p++){
+        dataRatio.push(dataElapsed[p]/dataEstimated[p])
+        }
+
+      //Ratio Chart
+
+      var ctx = $("#ratioChart");
+
+      var data = {
+        labels: projectArray,
+        datasets: [
+            {
+              label: "Time Spent / Estimated Time",
+              backgroundColor: "rgba(255,99,132,0.2)",
+              borderColor: "rgba(255,99,132,1)",
+              borderWidth: 1,
+              hoverBackgroundColor: "rgba(255,99,132,0.4)",
+              hoverBorderColor: "rgba(255,99,132,1)",
+              data: dataRatio
+            }
+        ]
+      };
+
+      var options= {
+        responsive: true
+      };
+
+      var myBarChart = new Chart(ctx, {
+        type: 'bar',
+        data: data,
+        options: options
+      });
+
+    //Raw Time Chart
+
+      var ctx = $("#rawChart");
+
+      //remove totals for pie chart
+      projectArray.pop()
+      dataElapsed.pop()
+
+      var data = {
+        labels: projectArray,
+        datasets: [
+            {
+              label: "Total Time Spent (Hours)",
+              backgroundColor: ["red","yellow","blue","green","white","black","teal","orange","purple"],
+              borderColor: "white",
+              borderWidth: 1,
+              data: dataElapsed
+            }
+        ]
+      };
+
+      var options= {
+        responsive: true
+      };
+
+      var myPieChart = new Chart(ctx,{
+          type: 'pie',
+          data: data,
+          options: options
+      });
+
+    //Add pie chart with raw values per project
+
+
+
+    //This closes generateCharts()
+    };
+
+
+
+//- SLOWER METHOD FOR GETTING DATA
+
+//- //get unique projects from taskArray
+//- var projectArray =[];
+//- for (i=0; i < taskArray.length; i++){
+//-   var projectName = taskArray[i].project_name;
+//-   if(projectArray.indexOf(projectName) < 0){
+//-     projectArray.push(projectName)
+//-   }
+//- }
+
+//- var dataArray = [];
+
+//- console.log(taskArray[1])
+//- console.log(projectArray)
+
+
+//- //for each given project sum up timeelapsed and estimates
+//-   // can this be done w/o nested loops?
+//-   //at very least we can make the tasks array shorter each time by popping out already counted items
+//- var totalElapsed = 0;
+//- var totalEstimated = 0;
+//- // loop through projects
+//- for (p=0; p < projectArray.length; p++){
+//-   var projectElapsed = 0;
+//-   var projectEstimated = 0;
+//-   var removeArray = [];
+//-   //for a given project loop through tasks, grab the task's data and add it to a 'delete' array
+//-   for (t=0; t < taskArray.length; t++){
+//-     if (taskArray[t].project_name == projectArray[p]){
+//-       projectElapsed += taskArray[t].timeElapsed;
+//-       projectEstimated += taskArray[t].estimatedTime;
+//-       console.log('project name: '+projectArray[p] +' has this much time elapsed: '+projectElapsed)
+//-       removeArray.push(t);
+//-       }
+//-     }
+//-   //when done looping through tasks, loop through the delete array and pop all its elements out of tasks
+//-   for (r=0; r <removeArray.length; r++){
+//-     taskArray.splice(removeArray[r]-r,1)
+//-     }
+//-   //need to now store projetElapsed and projectEstimated into data array
+//-   dataArray.push(projectElapsed/projectEstimated);
+//-   totalElapsed += projectElapsed;
+//-   totalEstimated += projectEstimated;
+//-   }
+
+//- //Now that done looping through project array, create totals
+//- projectArray.push('Total')
+//- dataArray.push(totalElapsed/totalEstimated)
+
+//-data is sum of time spent / sum of estimated time for each project (and total)
