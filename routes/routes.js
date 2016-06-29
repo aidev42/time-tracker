@@ -1,7 +1,7 @@
 var request = require('request')
 // Load models
 var User = require('../model/user');
-var Task = require('../model/tasks');
+var Task = require('../model/task');
 
 module.exports = function(app, passport){
 
@@ -19,66 +19,107 @@ module.exports = function(app, passport){
   app.get('/auth/todoist', passport.authenticate('todoist', { scope: 'data:read_write'}));
   app.get('/auth/todoist/callback', passport.authenticate('todoist', {successRedirect: '/todoist', failureRedirect: '/'}));
 
-  //Load Todoist Page
+  //Load Todoist Pages
   app.get('/todoist', function(req, res){
     global.backendUser = req.user.todoist;
     global.frontendUser = todoistUser(req.user.todoist);
     res.render('todoist', {user: frontendUser});
   });
 
+  app.get('/todoistanalyze', function(req, res){
+    res.render('todoistanalyze', {user: frontendUser});
+  });
+
+  //Update store elasped time value every X seconds
+  app.post('/todoist/updatetask', function(req, res){
+    console.log('now in routes to update time')
+    console.log('this is current elapsed value: '+ req.body.timeElapsed)
+    Task.findOne({
+    'taskID': req.body.task.id
+    },
+    function(err, task){
+      if(err){ return err; }
+
+      //we know the task already exists
+      else{
+        //Need to get timeElapsed property from specific task
+        console.log('updating time')
+        console.log(task)
+        task.timeElapsed = req.body.timeElapsed
+        task.save(function(err){
+          if(err) console.log('error saving task' + err);
+        });
+        res.json('updated')
+      }
+    });
+  });
+
+  //Add a time estimation to the task
+  app.post('/todoist/estimatetask', function(req, res){
+    console.log('now in routes to estimate time')
+    console.log('this is input estimate: '+ req.body.estimate)
+    Task.findOne({
+    'taskID': req.body.task.id
+    },
+    function(err, task){
+      if(err){ return err; }
+
+      //we know the task already exists
+      else{
+        //Need to get estimatedTime property from specific task
+        console.log('updating estimate')
+        console.log(task)
+        task.estimatedTime = req.body.estimate * 60
+        task.save(function(err){
+          if(err) console.log('error saving task' + err);
+        });
+        res.json('updated')
+      }
+    });
+  });
+
   //Check/update task and time data
   app.post('/todoist/workingtask', function(req, res){
     console.log('now in routes')
-    console.log('backendUser.id')
+    console.log('this is current elapsed value: '+ req.body.timeElapsed)
     //check database to see if tasks exists. if not: save to database. If yes, check existing timeElapsed value and pass it back to the frontend
-    User.findOne({
+    console.log('this is the seen task id number: ' +req.body.task.id)
+    var needEstimation = 0;
+    Task.findOne({
       //ADD AUTHENTIFICATION
       //_id: req.user._id,
-      tasks: {$elemMatch: {taskID: req.body.task.id}}
+      'taskID': req.body.task.id
     },
-    function(err, user){
+    function(err, task){
       if(err){ return err; }
 
-      if(!user){
+      if(!task){
         console.log('creating new task')
-        //create new task within current backendUser
-        User.findOne({
-          'todoist.id': backendUser.id
-        },
-        function(err,user){
-          if(err){ return err; }
-          if(!user) { console.log('couldnt find any user')}
-
-          else{
-            var task = new Task({
-              'task_name': req.body.task.content,
-              'taskID': req.body.task.id,
-              'project_name': req.body.projectName,
-              'projectID': req.body.task.project_id,
-              'ownerID': req.body.task.user_id,
-              'timeElapsed': req.body.elapsed,
-              'estimatedTime': 0
-          })}
-          task.save(function(err){
-            if(err) console.log('error saving task' + err);
-          });
-          console.log('task should have been saved')
-          console.log('logging tasks: '+ user.tasks)
-        }
-        )
+        //create new task
+        var task = new Task({
+          'task_name': req.body.task.content,
+          'taskID': req.body.task.id,
+          'project_name': req.body.projectName,
+          'projectID': req.body.task.project_id,
+          'ownerID': req.body.task.user_id,
+          'timeElapsed': req.body.timeElapsed,
+          'estimatedTime': 0
+        })
+        console.log(task)
+        task.save(function(err){
+          if(err) console.log('error saving task' + err);
+          return task;
+        });
+        //since we are just creating the task for the first time, send back an indication that we to get the user input for
+        var needEstimation = -1;
+        res.json(needEstimation)
       }
-      //Task already exists since user was found by child taskID
+      //Task already exists
       else{
         //Need to get timeElapsed property from specific task
-        console.log('getting existin task data')
-        var userTasks = user.tasks;
-        var elapsed = 0;
-        for (i=0; i< userTasks.length; i++){
-          if (userTasks[i].taskID == req.body.task.id){
-            elapsed = userTasks[i].timeElapsed;
-            break
-          }
-        }
+        console.log('getting existing task data')
+        console.log(task)
+        var elapsed = task.timeElapsed;
         //now return this to the front end
         console.log('this much time has gone:' + elapsed)
         res.json(elapsed)

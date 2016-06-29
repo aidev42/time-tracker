@@ -1,6 +1,5 @@
 var mongoose = require('mongoose');
 var bcrypt   = require('bcrypt-nodejs');
-var taskSchema = require('./tasks');
 
 // define the schema for user
 var userSchema = mongoose.Schema({
@@ -11,7 +10,6 @@ var userSchema = mongoose.Schema({
       inbox_project: Number,
       access_token: String,
       sync_token: String,
-      tasks: [taskSchema]
   }
 });
 

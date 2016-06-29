@@ -89,6 +89,22 @@ nav a{
   margin-left: 20%;
 }
 
+.hiddeninput{
+  float: left;
+  display: none;
+}
+
+.unhiddeninput{
+  float: left;
+  display: block;
+  background: red;
+  height: 100%;
+  width: 100%;
+}
+
+#labelArea, #projects{
+  clear: none;
+}
 
 /*BUTTONS*/
 .btn.outline {
