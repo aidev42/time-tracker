@@ -95,6 +95,7 @@ block content
                 if (res < 0){
                   $('.hiddeninput').addClass('unhiddeninput')
                   $('.unhiddeninput').removeClass('hiddeninput')
+                  $('#projects').addClass('hiddeninput')
                 }
                 //
                 else{
@@ -127,6 +128,7 @@ block content
           if( !isNaN(userEstimate) && userEstimate == userConfirm ){
             $('.unhiddeninput').addClass('hiddeninput')
             $('.hiddeninput').removeClass('unhiddeninput')
+            $('#projects').removeClass('hiddeninput')
             $.ajax({
               url: '/todoist/estimatetask',
               method: 'POST',
