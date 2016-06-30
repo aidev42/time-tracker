@@ -6,13 +6,13 @@ var taskSchema = mongoose.Schema({
   //task name
   task_name: String,
   //task id
-  taskID: Number,
+  taskID: String,
   //project name
   project_name: String,
   //project id
-  projectID: Number,
+  projectID: String,
   //owner's user ID
-  ownerID: Number,
+  ownerID: String,
   //time elapsed stored in seconds
   timeElapsed: Number,
   //estimated time stored in seconds

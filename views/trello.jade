@@ -1,0 +1,98 @@
+extends layout.jade
+block content
+  nav.navbar-custom
+    span Welcome, #{user.full_name}
+    a(href='/trello') Main
+    a(href='/trelloanalyze') Analyze
+  div.row
+    //- Handles all the clock related scripting
+    include todoistClock.jade
+
+    div.col-xs-10.col-xs-offset-1.selector
+      //- Handles task input of estimate to complete
+      include estimate.jade
+
+      p#labelArea
+        a(href='/trello') Boards
+      div#projects.col-xs-12
+
+  //- TRELLO HIERARCHY: Boards >> Lists >> Cards
+  //- Map 'boards' term to todoist 'project' term
+  //- Map 'cards' term to todoist 'task' term
+  //- Map 'lists' term to extra container divs only displayed on /trello page
+
+  //- Script to get all baords, then upon a click of a board, create the lists and cards
+  script.
+    var projectsArray = [];
+    var eachProjectItem = [];
+    var $projectArea = $('#projects')
+
+    $.ajax({
+      url: '/api/trello/boards',
+      method: 'GET',
+      success: function (res) {
+        var projectList = res;
+        $('#projects').empty();
+
+        for (i=0; i < projectList.length; i++){
+          eachProjectItem = [projectList[i].name,projectList[i].id];
+          projectsArray.push(eachProjectItem);
+          var $newProject = $('<div class="col-xs-4 project">'+projectList[i].name+'</div>');
+          $projectArea.append($newProject);
+        }
+      },
+      error: function (res) {
+        console.log('error')
+      }
+    });
+
+    $('#projects').one('click','.project',function(e){
+      window.projectName = $(this).html();
+      for (i=0; i < projectsArray.length; i++){
+        if(projectName == projectsArray[i][0]){
+          var projectID = projectsArray[i][1];
+          break
+        }
+      }
+
+      var $newLabel = $('<span id="taskLabel"> >> '+projectName+'</span>');
+      $('#labelArea').append($newLabel);
+
+
+      //now have projectID, need to return tasks and find all which have a projectID matching the ID
+      //- THIS NEEDS TO BE CHANGED SLIGHLY FOR TRELLO TO ACCOUNT FOR GROUPING CARDS INTO LISTS
+      $.ajax({
+        url: '/api/trello/cards',
+        method: 'POST',
+        data:{
+          boardID: projectID
+        },
+        success: function (res) {
+          //we get back an array of lists, with cards as a key of array of cards within
+          //for each list we need an unclasseddiv, and for each card we need a task within that div
+          //for compatibility with existing todoist code need to create an array of the cards called taskList
+
+          window.taskList =[]
+          var listsOfCards = res;
+          $projectArea.empty();
+
+          for (l=0; l < listsOfCards.length; l++){
+            var $newlist = $('<div class="col-xs-6"><p>'+listsOfCards[l].name+'</p></div>')
+            var cardsInList = listsOfCards[l].cards
+            for (c=0; c < cardsInList.length; c++){
+              //for compatibility with todoist create a key called 'content' equal to card name and add card to taskList. Also add project name and project ID to the task
+              cardsInList[c].content = cardsInList[c].name;
+              cardsInList[c].project_id = projectID;
+              taskList.push(cardsInList[c]);
+              var $newcard = $('<div class="col-xs-6 task">'+cardsInList[c].content+'</div>');
+              $newlist.append($newcard);
+              }
+            $projectArea.append($newlist);
+            }
+          console.log(taskList)
+        },
+        error: function (res) {
+          console.log('error')
+        }
+      });
+    });

@@ -9,9 +9,21 @@ module.exports = function(app, passport){
     res.render('index');
   });
 
-  // Twitter
-  app.get('/auth/twitter', passport.authenticate('twitter'));
-  app.get('/auth/twitter/callback', passport.authenticate('twitter', { successRedirect: '/secret', failureRedirect: '/login' }));
+  // Trello
+  app.get('/auth/trello', passport.authenticate('trello'));
+  app.get('/auth/trello/callback', passport.authenticate('trello', {successRedirect: '/trello', failureRedirect: '/'}));
+
+  app.get('/trello', function(req, res){
+    // Does this save backendUser to ALL sessions?
+    console.log('in routes now', req.user)
+    global.backendUser = req.user.trello;
+    global.frontendUser = req.user.trello;
+    res.render('trello', {user: frontendUser});
+  });
+
+  app.get('/trelloanalyze', function(req, res){
+    res.render('trelloanalyze', {user: frontendUser});
+  });
 
   // TODOIST
 
@@ -23,7 +35,7 @@ module.exports = function(app, passport){
   app.get('/todoist', function(req, res){
     // Does this save backendUser to ALL sessions?
     global.backendUser = req.user.todoist;
-    global.frontendUser = todoistUser(req.user.todoist);
+    global.frontendUser = req.user.todoist
     res.render('todoist', {user: frontendUser});
   });
 
@@ -31,7 +43,7 @@ module.exports = function(app, passport){
     res.render('todoistanalyze', {user: frontendUser});
   });
 
-  app.get('/todoist/gettaskdata',function(req,res){
+  app.get('/gettaskdata',function(req,res){
     Task.find({
      //find all tasks with the owner id which matches current backend user id
      'ownerID': backendUser.id
@@ -45,7 +57,7 @@ module.exports = function(app, passport){
   });
 
   //Update store elasped time value every X seconds
-  app.post('/todoist/updatetask', function(req, res){
+  app.post('/updatetask', function(req, res){
     console.log('now in routes to update time')
     console.log('this is current elapsed value: '+ req.body.timeElapsed)
     Task.findOne({
@@ -69,7 +81,7 @@ module.exports = function(app, passport){
   });
 
   //Add a time estimation to the task
-  app.post('/todoist/estimatetask', function(req, res){
+  app.post('/estimatetask', function(req, res){
     console.log('now in routes to estimate time')
     console.log('this is input estimate: '+ req.body.estimate)
     Task.findOne({
@@ -93,7 +105,7 @@ module.exports = function(app, passport){
   });
 
   //Check/update task and time data
-  app.post('/todoist/workingtask', function(req, res){
+  app.post('/workingtask', function(req, res){
     console.log('now in routes')
     console.log('this is current elapsed value: '+ req.body.timeElapsed)
     //check database to see if tasks exists. if not: save to database. If yes, check existing timeElapsed value and pass it back to the frontend
@@ -115,7 +127,8 @@ module.exports = function(app, passport){
           'taskID': req.body.task.id,
           'project_name': req.body.projectName,
           'projectID': req.body.task.project_id,
-          'ownerID': req.body.task.user_id,
+          // make this the global user
+          'ownerID': backendUser.id,
           'timeElapsed': req.body.timeElapsed,
           'estimatedTime': 0
         })
@@ -138,14 +151,41 @@ module.exports = function(app, passport){
         console.log('this much time has gone:' + elapsed)
         res.json(elapsed)
       }
+    console.log('done creating or updating task')
     });
   });
 
-  function todoistUser(userInput){
-    var tempUser = {
-      full_name: userInput.full_name
-    }
-    return tempUser
+  //Trello API calls
+  var trelloURL = 'https://api.trello.com/1/'
+  var TrelloKey = require('../APIkeys/config.json').trello.appID;
+
+  app.get('/api/trello/boards', function(req, res){
+    //Make request to get all projects
+    var queryString = 'members/'+backendUser.id+'/boards?'
+    trelloRequest(queryString,'boards', 'trello', {user: frontendUser}, res);
+  });
+
+  app.post('/api/trello/cards', function(req, res){
+    //Make request to get all lists and cards
+    var queryString = 'boards/'+req.body.boardID+'/lists?cards=open&card_fields=name&fields=name&'
+    trelloRequest(queryString,'cards', 'trello', {user: frontendUser}, res);
+  });
+
+  function trelloRequest(queryString, dataField, template, localVariables, res){
+    var callOptions = {
+      url: trelloURL + queryString + 'key='+TrelloKey+'&token='+backendUser.access_token,
+      method: 'GET'
+    };
+    console.log('queryURL',callOptions.url);
+    request(callOptions, function (error, response, body) {
+      if (error){
+        return [{message: 'Error retrieving data'}]
+      }
+      var rawData = parseRawData(body,dataField);
+
+      localVariables.projectlist = rawData;
+      res.json(rawData);
+    });
   }
 
   //Todoist API calls
@@ -192,5 +232,14 @@ module.exports = function(app, passport){
       rawData = rawData.items
       return rawData
     }
+    if (dataField == 'boards'){
+      rawData = rawData
+      return rawData
+    }
+    if (dataField == 'cards'){
+      rawData = rawData
+      return rawData
+    }
+
   }
 }

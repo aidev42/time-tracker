@@ -5,165 +5,18 @@ block content
     a(href='/todoist') Main
     a(href='/todoistanalyze') Analyze
   div.row
-    div.col-xs-10.col-xs-offset-1
-      .clock(style='margin:2em;')
-      .message
-      script(type='text/javascript').
-        var clock;
-        $(document).ready(function() {
-        var clock;
-        clock = $('.clock').FlipClock({
-          clockFace: 'HourlyCounter',
-          autoStart: false,
-          callbacks: {
-            interval: function () {
-              window.elapsed = clock.getTime().time;
-              //Insert function to send an ajax call to save to database every 60 seconds (if elapsed % 60=0)
-              if(elapsed % 30 ==0 && elapsed > 0){
-                $.ajax({
-                  url: '/todoist/updatetask',
-                  method: 'POST',
-                  data: {
-                    task: clickedTask,
-                    timeElapsed: elapsed
-                  },
-                  success: function (res) {
-                   //no need to do anything
-                   console.log('time updated in database')
-                   console.log('elapsed is now: '+elapsed)
-                  },
-                  error: function (res) {
-                    console.log('error')
-                  }
-                });
-              }
-            }
-          }
-        });
-        elapsed = 0;
-        clock.setTime(0);
-        clock.setCountdown(false);
-        var tasksWorking = 0;
-        //Task on click
-        $('#projects').on('click','.task',function(e){
-          //We only want this to trigger if either no tasks are currently working or we click the same task currently working
-          var validClick = false;
-          // case of no tasks working
-          if (tasksWorking === 0){
-            validClick = true;
-            tasksWorking = 1
-            $(this).addClass('working')
-            var clockStatus = 'wasStopped'
-          }
-          //case of one task working and we click on it
-          else if ($(this).hasClass('working')){
-            validClick = true;
-            tasksWorking = 0;
-            $(this).removeClass('working')
-            var clockStatus = 'wasRunning';
-          }
-          //case of one task working and we click another task
-          else{
-          //Do Nothing
-          }
-
-          if (validClick){
-            //pings the database to check database, if does not exist save to database, if does exist check for time already stored and set to stored time value and elapsed value
-
-            //which task was clicked?
-            var taskName = $(this).html();
-            for (i=0; i < taskList.length; i++){
-              if(taskName == taskList[i].content){
-                window.clickedTask = taskList[i];
-                break
-              }
-            }
-
-            //send the task object and project object back
-            $.ajax({
-              url: '/todoist/workingtask',
-              method: 'POST',
-              data: {
-                task: clickedTask,
-                projectName: projectName,
-                timeElapsed: elapsed
-                //- TO DO: estimatedTime: XXX build in prompt at time of click for user to input answer
-              },
-              success: function (res) {
-                //Get the stored elapsed time and set the clock time. Start the clock or (stop and reset elapsed time)
-                //If res is negative it means task was just created and we need to prompt user for estimate
-                if (res < 0){
-                  $('.hiddeninput').addClass('unhiddeninput')
-                  $('.unhiddeninput').removeClass('hiddeninput')
-                  $('#projects').addClass('hiddeninput')
-                }
-                //
-                else{
-                  if (clockStatus == 'wasRunning'){
-                    clock.stop();
-                    clock.setTime(0);
-                    elapsed = 0;
-                  } else{
-                    clock.setTime(res);
-                    elapsed = res;
-                    clock.start();
-                  }
-                }
-              },
-              error: function (res) {
-                console.log('error')
-              }
-            });
-          }
-        });
-        //- on button click verify estimate is a number and matches confirm
-        //- rehide the input div and fire ajax to update the existing task's estimate
-        //- upon ajax success start dat clock (clock had to be not running since if we are here this is first time triggered task)
-
-        $('#submit').on('click',function(e){
-          e.preventDefault();
-          var userEstimate = document.getElementById('estimate').value;
-          var userConfirm = document.getElementById('confirm').value;
-
-          if( !isNaN(userEstimate) && userEstimate == userConfirm ){
-            $('.unhiddeninput').addClass('hiddeninput')
-            $('.hiddeninput').removeClass('unhiddeninput')
-            $('#projects').removeClass('hiddeninput')
-            $.ajax({
-              url: '/todoist/estimatetask',
-              method: 'POST',
-              data: {
-                task: clickedTask,
-                estimate: userEstimate
-              },
-              success: function(res){
-                clock.start();
-              },
-              error: function(res){
-                console.log('ajax error')
-              }
-            })
-          }
-        });
-
-        });
-
+    //- Handles all the clock related scripting
+    include todoistClock.jade
 
     div.col-xs-10.col-xs-offset-1.selector
-      //- THIS SECTION IS FOR HANDLING POPUP FOR TIME ESTIMATION
-      div.hiddeninput
-        form
-          .form-group
-            label Estimated Time to Complete Task (Minutes ex. 30)
-            input.form-control(type='number', name='estimate', id='estimate')
-            label Confirm Estimate
-            input.form-control(type='number', name='confirmEstimate', id='confirm')
-          button.btn.btn-warning.btn-lg(type='submit', id='submit') Submit Estimate
+      //- Handles task input of estimate to complete
+      include estimate.jade
 
       p#labelArea
         a(href='/todoist') Projects
       div#projects.col-xs-12
 
+  //- Script to get projects and upon click of projects, get tasks
   script.
     var projectsArray = [];
     var eachProjectItem = [];
@@ -188,7 +41,7 @@ block content
       }
     });
 
-    $('#projects').on('click','.project',function(e){
+    $('#projects').one('click','.project',function(e){
       window.projectName = $(this).html();
       for (i=0; i < projectsArray.length; i++){
         if(projectName == projectsArray[i][0]){
@@ -208,7 +61,7 @@ block content
         success: function (res) {
           //return tasks, find project id in projectsArray based on
           window.taskList = res;
-          $('#projects').empty();
+          $projectArea.empty();
 
           for (i=0; i < taskList.length; i++){
             if (taskList[i].project_id === projectID){
@@ -222,10 +75,3 @@ block content
         }
       });
     });
-
-
-
-//- script.
-//-   var user = #{user}
-
-//- script(src="../APIlinks.js")

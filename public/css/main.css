@@ -187,3 +187,15 @@ nav a{
 zoom: 0.5;
 -moz-transform: scale(0.5)
 }
+
+/*canvas*/
+
+canvas{
+  max-width: 90%;
+  max-height: 30%;
+  margin: 0 auto;
+}
+
+#chartLabel{
+  text-align: center;
+}

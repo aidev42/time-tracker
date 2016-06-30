@@ -3,14 +3,21 @@ var bcrypt   = require('bcrypt-nodejs');
 
 // define the schema for user
 var userSchema = mongoose.Schema({
-  todoist          : {
-      full_name: String,
-      email: String,
-      id: Number,
-      inbox_project: Number,
-      access_token: String,
-      sync_token: String,
+  todoist: {
+    full_name: String,
+    email: String,
+    id: Number,
+    inbox_project: Number,
+    access_token: String,
+    sync_token: String,
+  },
+  trello:{
+    full_name: String,
+    id: String,
+    access_token: String,
+    token_secret: String
   }
+
 });
 
 // methods ======================
