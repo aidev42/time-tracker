@@ -11,7 +11,7 @@ var session = require('express-session');
 var app = express();
 
 // Connect with Mongo DB
-var mongoUri =  process.env.MONGOLAB_URI || 'mongodb://localhost/timetracker';
+var mongoUri =  process.env.MONGOLAB_URI;
 mongoose.connect(mongoUri);
 
 //Init the middle-ware
