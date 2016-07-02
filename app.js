@@ -44,9 +44,6 @@ require('./config/passport')(passport);
 // Routes.js file contains page and API links
 require('./routes/routes')(app, passport);
 
-//API keys
-require('./APIkeys/config.json')
-
 // listen
 app.listen(process.env.PORT || 3000 )
 
