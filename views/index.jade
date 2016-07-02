@@ -1,16 +1,17 @@
 extends layout.jade
 block content
   div.row
-    div.col-xs-6.col-xs-offset-3
-      h4 The Future of Task Management
-    div.col-xs-6.col-xs-offset-3
-        p What is Time Hacker?
-        p.nobreak Time Hacker is a plugin for task management solutions such as Trello and Todoist.
-        p Time Hacker helps you improve your time estimation abilities and keep track of the demands on your time.
-    div.col-xs-6.col-xs-offset-3
-      div.col-xs-8
-        form.center(action='/auth/todoist', method='get')
-          button.btn.btn-warning.outline.btn-lg(type='submit') Link to Todoist
-      div.col-xs-8
-        form.center(action='/auth/trello', method='get')
-          button.btn.btn-primary.outline.btn-lg(type='submit') Link to Trello &nbsp<br>(Coming Soon)&nbsp&nbsp
+    div.top
+      div.col-xs-8.col-xs-offset-2
+        h1
+          a(href='/') Time Tracker
+        h4 Time Is Limited. Not Your Tasks.
+    div.col-xs-8.col-xs-offset-2
+        p What is Time Tracker?
+        p.nobreak Time Tracker is a completely free to use, open source extension for task management solutions such as Trello and Todoist.
+        p Why use Time Tracker?
+        p Time Tracker helps you visualize where you are spending your time, and helps you track and improve your ability to estimate how long work will take to complete.
+    form.center(action='/auth/todoist', method='get')
+      button.btn.btn-warning.outline.btn-lg(type='submit') Link to Your Todoist
+    form.center(action='/auth/trello', method='get')
+      button.btn.btn-primary.outline.btn-lg(type='submit') Link to Your Trello &nbsp

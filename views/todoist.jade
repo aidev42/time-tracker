@@ -1,14 +1,17 @@
 extends layout.jade
 block content
-  nav.navbar-custom
-    span Welcome, #{user.full_name}
-    a(href='/todoist') Main
-    a(href='/todoistanalyze') Analyze
+  div.top
+    h1
+      a(href='/') Time Tracker
+    nav.navbar-custom
+      span Welcome, #{user.full_name}
+      a(href='/todoist') Work
+      a(href='/todoistanalyze') Analyze
   div.row
     //- Handles all the clock related scripting
-    include todoistClock.jade
+    include timer.jade
 
-    div.col-xs-10.col-xs-offset-1.selector
+    div.selector
       //- Handles task input of estimate to complete
       include estimate.jade
 
@@ -18,6 +21,7 @@ block content
 
   //- Script to get projects and upon click of projects, get tasks
   script.
+    window.isTrello = false;
     var projectsArray = [];
     var eachProjectItem = [];
     var $projectArea = $('#projects')
@@ -65,7 +69,7 @@ block content
 
           for (i=0; i < taskList.length; i++){
             if (taskList[i].project_id === projectID){
-              var $newTask = $('<div class="col-xs-6 task">'+taskList[i].content+'</div>');
+              var $newTask = $('<div class="task">'+taskList[i].content+'</div>');
               $projectArea.append($newTask);
             }
           }

@@ -41,7 +41,7 @@ module.exports = function( passport ) {
     passReqToCallback: true,
     trelloParams: {
         scope: "read,write",
-        name: "MyApp",
+        name: "Time Tracker",
         expiration: "never"
       }
     }, function(req, token, tokenSecret, profile, done){

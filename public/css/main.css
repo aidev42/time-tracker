@@ -16,7 +16,7 @@ body{
   /*animation: animatedBackground 0s linear infinite;*/
 }
 
-.dimmer{
+#dimmer{
   padding: 0;
   margin: 0;
   position: absolute;
@@ -33,13 +33,14 @@ body{
 
 .selector{
   box-shadow: 10px 10px 5px rgba(0,0,0,.6), inset 0px 0px 20px 10px rgba(0,0,0,.6);
+  max-width: 83%;
 }
 
 h1, h4{
   text-align: center;
 }
 h1{
-  margin-top: 2%;
+  padding-top: 2%;
   margin-bottom: 0;
   font-family: Alien-Encounters-Italic;
   color: red;
@@ -77,10 +78,6 @@ footer{
   width: 49%;
 }
 
-.task{
-  width: 99%
-}
-
 .project:hover, .task:hover, .working{
   background: red;
 }
@@ -90,20 +87,14 @@ nav a{
 }
 
 .hiddeninput{
-  float: left;
   display: none;
 }
 
 .unhiddeninput{
-  float: left;
   display: block;
   background: red;
   height: 100%;
   width: 100%;
-}
-
-#labelArea, #projects{
-  clear: none;
 }
 
 /*BUTTONS*/
@@ -198,4 +189,62 @@ canvas{
 
 #chartLabel{
   text-align: center;
+}
+
+.flip-clock-wrapper{
+  width: 460px;
+  display: block;
+  margin: 5% auto;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+form{
+  display: block;
+  margin: .5% auto;
+  max-width: 255px;
+}
+
+footer a, .divider{
+  margin-right: 2.5%;
+}
+
+#dimmer {
+  padding-bottom: 15rem;
+  min-height: 100%;
+}
+
+footer {
+  position: absolute;
+  right: 0;
+  bottom: 0px;
+  left: 0;
+  padding-bottom: 10rem;
+  padding-top: 1rem;
+  text-align: center;
+  background: rgba(0,0,0,.3);
+  background-size: cover;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+}
+
+.top{
+  background: rgba(0,0,0,.3);
+  background-size: cover;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+}
+
+.selector, #projects{
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.navbar-custom{
+  max-width: 320px;
+  display: block;
+  margin: 0 auto;
+  background: none;
 }

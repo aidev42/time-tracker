@@ -9,8 +9,22 @@ module.exports = function(app, passport){
     res.render('index');
   });
 
-  // Trello
+  // Trello Links
   app.get('/auth/trello', passport.authenticate('trello'));
+
+  //THIS WAS A TEST TO SEE IF COULD CONDITIONALLY RUN PASSPORT- VERY STANGE RESULT WITH the function running before it was called!?!?
+  // app.get('/auth/trello', authenticated('trello'));
+
+  // function authenticated(client){
+  //   console.log('CHECKING AUTH: ', backendUser)
+  //   if (backendUser){
+  //     console.log('THERE IS A BACKEND USER HERE AND HE IS: ', backendUser)
+  //     res.redirect('/trello')
+  //   } else{
+  //     return passport.authenticate('trello');
+  //   }
+  // };
+
   app.get('/auth/trello/callback', passport.authenticate('trello', {successRedirect: '/trello', failureRedirect: '/'}));
 
   app.get('/trello', function(req, res){
@@ -25,7 +39,49 @@ module.exports = function(app, passport){
     res.render('trelloanalyze', {user: frontendUser});
   });
 
-  // TODOIST
+  //Trello API calls
+  var trelloURL = 'https://api.trello.com/1/'
+  var TrelloKey = require('../APIkeys/config.json').trello.appID;
+
+  app.get('/api/trello/boards', function(req, res){
+    //Make request to get all projects
+    var queryString = 'members/'+backendUser.id+'/boards?'
+    var specialString = ''
+    trelloRequest(queryString,specialString,'GET','boards', 'trello', {user: frontendUser}, res);
+  });
+
+  app.get('/api/trello/cards', function(req, res){
+    //Make request to get all lists and cards
+    var queryString = 'boards/'+req.body.boardID+'/lists?cards=open&card_fields=name&fields=name&'
+    var specialString = ''
+    trelloRequest(queryString,specialString,'GET','cards', 'trello', {user: frontendUser}, res);
+  });
+
+  app.post('/api/trello/movecard', function(req, res){
+    //Make request to get all lists and cards
+    var queryString = 'cards/'+req.body.cardID+'/idList?'
+    var specialString = '&value=' + req.body.moveToListID
+    trelloRequest(queryString,specialString,'PUT','cards', 'trello', {user: frontendUser}, res);
+  });
+
+  function trelloRequest(queryString,specialString, method, dataField, template, localVariables, res){
+    var callOptions = {
+      url: trelloURL + queryString + 'key='+TrelloKey+'&token='+backendUser.access_token + specialString,
+      method: method
+    };
+    console.log('queryURL',callOptions.url);
+    request(callOptions, function (error, response, body) {
+      if (error){
+        return [{message: 'Error retrieving data'}]
+      }
+      var rawData = parseRawData(body,dataField);
+
+      localVariables.projectlist = rawData;
+      res.json(rawData);
+    });
+  }
+
+  // Todoist links
 
   //Authentication
   app.get('/auth/todoist', passport.authenticate('todoist', { scope: 'data:read_write'}));
@@ -43,6 +99,43 @@ module.exports = function(app, passport){
     res.render('todoistanalyze', {user: frontendUser});
   });
 
+  //Todoist API calls
+  var syncURL = 'https://todoist.com/API/v7/sync'
+
+  app.get('/api/todoist/projects', function(req, res){
+    //Make request to get all projects
+    todoistRequest(backendUser, 'projects', 'todoist', {user: frontendUser}, res);
+  });
+
+  app.get('/api/todoist/tasks', function(req, res){
+    //Make request to get all tasks- referred to as items by Todoist API
+    todoistRequest(backendUser, 'items', 'todoist', {user: frontendUser}, res);
+  });
+
+  function todoistRequest(user, dataField, template, localVariables, res){
+    var callOptions = {
+      url: syncURL,
+      method: 'POST',
+      form: {
+        token: user.access_token,
+        sync_token: '*',
+        resource_types: JSON.stringify([dataField])
+      }
+    };
+    request(callOptions, function (error, response, body) {
+      if (error){
+        return [{message: 'Error retrieving data'}]
+      }
+      var rawData = parseRawData(body,dataField);
+
+      localVariables.projectlist = rawData;
+      res.json(rawData);
+    });
+  }
+
+  //Generic links- these are used for finding and manipulating data in the database for both trello and todoist
+
+  //Gets all tasks stored in the database for the current user
   app.get('/gettaskdata',function(req,res){
     Task.find({
      //find all tasks with the owner id which matches current backend user id
@@ -56,7 +149,7 @@ module.exports = function(app, passport){
     });
   });
 
-  //Update store elasped time value every X seconds
+  //Update stored elasped time value every X seconds
   app.post('/updatetask', function(req, res){
     console.log('now in routes to update time')
     console.log('this is current elapsed value: '+ req.body.timeElapsed)
@@ -132,14 +225,12 @@ module.exports = function(app, passport){
           'timeElapsed': req.body.timeElapsed,
           'estimatedTime': 0
         })
+        var elapsed = 0;
         console.log(task)
         task.save(function(err){
           if(err) console.log('error saving task' + err);
           return task;
         });
-        //since we are just creating the task for the first time, send back an indication that we to get the user input for
-        var needEstimation = -1;
-        res.json(needEstimation)
       }
       //Task already exists
       else{
@@ -149,79 +240,20 @@ module.exports = function(app, passport){
         var elapsed = task.timeElapsed;
         //now return this to the front end
         console.log('this much time has gone:' + elapsed)
-        res.json(elapsed)
       }
+      //Before we return anything, check if the task has estimation data. If not, prompt for the data
+      if (task.estimatedTime == 0){
+        var needEstimation = true;
+      } else{
+        var needEstimation = false;
+      }
+      var returnArray = [needEstimation,elapsed]
+      res.json(returnArray)
     console.log('done creating or updating task')
     });
   });
 
-  //Trello API calls
-  var trelloURL = 'https://api.trello.com/1/'
-  var TrelloKey = require('../APIkeys/config.json').trello.appID;
-
-  app.get('/api/trello/boards', function(req, res){
-    //Make request to get all projects
-    var queryString = 'members/'+backendUser.id+'/boards?'
-    trelloRequest(queryString,'boards', 'trello', {user: frontendUser}, res);
-  });
-
-  app.post('/api/trello/cards', function(req, res){
-    //Make request to get all lists and cards
-    var queryString = 'boards/'+req.body.boardID+'/lists?cards=open&card_fields=name&fields=name&'
-    trelloRequest(queryString,'cards', 'trello', {user: frontendUser}, res);
-  });
-
-  function trelloRequest(queryString, dataField, template, localVariables, res){
-    var callOptions = {
-      url: trelloURL + queryString + 'key='+TrelloKey+'&token='+backendUser.access_token,
-      method: 'GET'
-    };
-    console.log('queryURL',callOptions.url);
-    request(callOptions, function (error, response, body) {
-      if (error){
-        return [{message: 'Error retrieving data'}]
-      }
-      var rawData = parseRawData(body,dataField);
-
-      localVariables.projectlist = rawData;
-      res.json(rawData);
-    });
-  }
-
-  //Todoist API calls
-  var syncURL = 'https://todoist.com/API/v7/sync'
-
-  app.get('/api/todoist/projects', function(req, res){
-    //Make request to get all projects
-    todoistRequest(backendUser, 'projects', 'todoist', {user: frontendUser}, res);
-  });
-
-  app.get('/api/todoist/tasks', function(req, res){
-    //Make request to get all tasks- referred to as items by Todoist API
-    todoistRequest(backendUser, 'items', 'todoist', {user: frontendUser}, res);
-  });
-
-  function todoistRequest(user, dataField, template, localVariables, res){
-    var callOptions = {
-      url: syncURL,
-      method: 'POST',
-      form: {
-        token: user.access_token,
-        sync_token: '*',
-        resource_types: JSON.stringify([dataField])
-      }
-    };
-    request(callOptions, function (error, response, body) {
-      if (error){
-        return [{message: 'Error retrieving data'}]
-      }
-      var rawData = parseRawData(body,dataField);
-
-      localVariables.projectlist = rawData;
-      res.json(rawData);
-    });
-  }
-
+  //Used to parse raw data from API calls
   function parseRawData(rawData,dataField){
     rawData = JSON.parse(rawData);
     if (dataField == 'projects'){

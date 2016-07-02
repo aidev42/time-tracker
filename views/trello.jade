@@ -1,19 +1,23 @@
 extends layout.jade
 block content
-  nav.navbar-custom
-    span Welcome, #{user.full_name}
-    a(href='/trello') Main
-    a(href='/trelloanalyze') Analyze
+  div.top
+    h1
+      a(href='/') Time Tracker
+    nav.navbar-custom
+      span Welcome, #{user.full_name}
+      a(href='/trello') Work
+      a(href='/trelloanalyze') Analyze
   div.row
     //- Handles all the clock related scripting
-    include todoistClock.jade
+    include timer.jade
 
-    div.col-xs-10.col-xs-offset-1.selector
+    div.selector
       //- Handles task input of estimate to complete
       include estimate.jade
 
       p#labelArea
         a(href='/trello') Boards
+
       div#projects.col-xs-12
 
   //- TRELLO HIERARCHY: Boards >> Lists >> Cards
@@ -23,6 +27,7 @@ block content
 
   //- Script to get all baords, then upon a click of a board, create the lists and cards
   script.
+    window.isTrello = true;
     var projectsArray = [];
     var eachProjectItem = [];
     var $projectArea = $('#projects')
@@ -63,7 +68,7 @@ block content
       //- THIS NEEDS TO BE CHANGED SLIGHLY FOR TRELLO TO ACCOUNT FOR GROUPING CARDS INTO LISTS
       $.ajax({
         url: '/api/trello/cards',
-        method: 'POST',
+        method: 'GET',
         data:{
           boardID: projectID
         },
@@ -73,18 +78,33 @@ block content
           //for compatibility with existing todoist code need to create an array of the cards called taskList
 
           window.taskList =[]
-          var listsOfCards = res;
+          window.listsOfCards = res;
           $projectArea.empty();
 
+          //append list selector for use in moving card to doing list
+          var $dropdown = $('<div class="form-group"><label for="sel1">Select list for working items:</label></div')
+          var $droplist = $('<select class="form-control" id="lists"></select>')
+
           for (l=0; l < listsOfCards.length; l++){
-            var $newlist = $('<div class="col-xs-6"><p>'+listsOfCards[l].name+'</p></div>')
+            var $option = $('<option>'+listsOfCards[l].name+'</option>')
+            if(listsOfCards[l].name == 'Doing' || listsOfCards[l].name == 'Doing:' || listsOfCards[l].name == 'DOING' || listsOfCards[l].name == 'DOING:'){
+              $option.attr("selected","selected")
+            }
+              $droplist.append($option)
+            }
+
+          $dropdown.append($droplist)
+          $projectArea.append($dropdown)
+
+          for (l=0; l < listsOfCards.length; l++){
+            var $newlist = $('<div class="col-xs-12"><span>'+listsOfCards[l].name+'</span></div>')
             var cardsInList = listsOfCards[l].cards
             for (c=0; c < cardsInList.length; c++){
               //for compatibility with todoist create a key called 'content' equal to card name and add card to taskList. Also add project name and project ID to the task
               cardsInList[c].content = cardsInList[c].name;
               cardsInList[c].project_id = projectID;
               taskList.push(cardsInList[c]);
-              var $newcard = $('<div class="col-xs-6 task">'+cardsInList[c].content+'</div>');
+              var $newcard = $('<div class="col-xs-12 task">'+cardsInList[c].content+'</div>');
               $newlist.append($newcard);
               }
             $projectArea.append($newlist);
