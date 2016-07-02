@@ -11,7 +11,8 @@ var session = require('express-session');
 var app = express();
 
 // Connect with Mongo DB
-mongoose.connect('mongodb://localhost/timetracker');
+var mongoUri =  process.env.MONGOLAB_URI || 'mongodb://localhost/timetracker';
+mongoose.connect(mongoUri);
 
 //Init the middle-ware
 app.use(cookieParser());
@@ -47,7 +48,5 @@ require('./routes/routes')(app, passport);
 require('./APIkeys/config.json')
 
 // listen
-app.listen( 3001, function(){
-    console.log('listening on port 3001');
-});
+app.listen(process.env.PORT || 3000 )
 

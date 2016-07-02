@@ -3,12 +3,12 @@ var TodoistStrategy = require('passport-todoist').Strategy;
 var TrelloStrategy = require('passport-trello').Strategy
 
 //API connections
-var TodoistKey = require('../APIkeys/config.json').todoist.appID;
-var TodoistSecret = require('../APIkeys/config.json').todoist.appSecret;
+var TodoistKey = process.env.TodoistKey || require('../APIkeys/config.json').todoist.appID;
+var TodoistSecret = process.env.TodoistSecret || require('../APIkeys/config.json').todoist.appSecret;
 
-var TrelloKey = require('../APIkeys/config.json').trello.appID;
-var TrelloSecret = require('../APIkeys/config.json').trello.appSecret;
-var TrelloCallback = require('../APIkeys/config.json').trello.callback;
+var TrelloKey = process.env.TrelloKey || require('../APIkeys/config.json').trello.appID;
+var TrelloSecret = process.env.TrelloSecret || require('../APIkeys/config.json').trello.appSecret;
+var TrelloCallback = process.env.TrelloCallback || require('../APIkeys/config.json').trello.callback;
 
 
 // Load validator
