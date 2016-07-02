@@ -33,8 +33,8 @@ app.set( 'view engine', 'jade');
 app.use(express.static(path.join(__dirname, 'public')));
 
 //Initialize session
-var sessionSecret = process.env.SessionSecret || require('../APIkeys/config.json').SessionSecret;
-app.use(session( { secret: sessionSecret}));
+var sessionSecret = process.env.SessionSecret
+app.use(session( { secret: 'test'}));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
