@@ -41,7 +41,7 @@ module.exports = function(app, passport){
 
   //Trello API calls
   var trelloURL = 'https://api.trello.com/1/'
-  var TrelloKey = process.env.TrelloKey || require('../APIkeys/config.json').trello.appID;
+  var TrelloKey = process.env.TrelloKey
 
   app.get('/api/trello/boards', function(req, res){
     //Make request to get all projects
