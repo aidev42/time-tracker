@@ -66,9 +66,10 @@ block content
 
       //now have projectID, need to return tasks and find all which have a projectID matching the ID
       //- THIS NEEDS TO BE CHANGED SLIGHLY FOR TRELLO TO ACCOUNT FOR GROUPING CARDS INTO LISTS
+      console.log('this is the project ID:', projectID)
       $.ajax({
         url: '/api/trello/cards',
-        method: 'GET',
+        method: 'POST',
         data:{
           boardID: projectID
         },

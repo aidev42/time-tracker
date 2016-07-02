@@ -41,7 +41,7 @@ module.exports = function(app, passport){
 
   //Trello API calls
   var trelloURL = 'https://api.trello.com/1/'
-  var TrelloKey = process.env.TrelloKey
+  var TrelloKey = process.env.TrelloKey || require('../APIkeys/config.json').trello.appID;
 
   app.get('/api/trello/boards', function(req, res){
     //Make request to get all projects
@@ -50,8 +50,9 @@ module.exports = function(app, passport){
     trelloRequest(queryString,specialString,'GET','boards', 'trello', {user: frontendUser}, res);
   });
 
-  app.get('/api/trello/cards', function(req, res){
+  app.post('/api/trello/cards', function(req, res){
     //Make request to get all lists and cards
+    console.log('now in routes for cards', req.body.boardID)
     var queryString = 'boards/'+req.body.boardID+'/lists?cards=open&card_fields=name&fields=name&'
     var specialString = ''
     trelloRequest(queryString,specialString,'GET','cards', 'trello', {user: frontendUser}, res);

@@ -11,7 +11,7 @@ var session = require('express-session');
 var app = express();
 
 // Connect with Mongo DB
-var mongoUri =  process.env.MONGODB_URI;
+var mongoUri =  process.env.MONGODB_URI || 'mongodb://localhost/passport';
 mongoose.connect(mongoUri);
 
 //Init the middle-ware
@@ -33,7 +33,8 @@ app.set( 'view engine', 'jade');
 app.use(express.static(path.join(__dirname, 'public')));
 
 //Initialize session
-app.use(session( { secret: process.env.SessionSecret}));
+var sessionSecret = process.env.SessionSecret || require('../APIkeys/config.json').SessionSecret;
+app.use(session( { secret: sessionSecret}));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
