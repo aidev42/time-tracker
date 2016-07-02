@@ -11,7 +11,7 @@ var session = require('express-session');
 var app = express();
 
 // Connect with Mongo DB
-var mongoUri =  process.env.MONGOLAB_URI;
+var mongoUri =  process.env.MONGODB_URI;
 mongoose.connect(mongoUri);
 
 //Init the middle-ware
@@ -33,7 +33,7 @@ app.set( 'view engine', 'jade');
 app.use(express.static(path.join(__dirname, 'public')));
 
 //Initialize session
-app.use(session( { secret: 'IwantmyMTV'}));
+app.use(session( { secret: process.env.SessionSecret}));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
