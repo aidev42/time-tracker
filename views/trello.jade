@@ -97,15 +97,17 @@ block content
           $dropdown.append($droplist)
           $projectArea.append($dropdown)
 
+          //Add drag and drop functionality- on drop send AJAX call
+
           for (l=0; l < listsOfCards.length; l++){
-            var $newlist = $('<div class="col-xs-12"><span>'+listsOfCards[l].name+'</span></div>')
+            var $newlist = $('<div id="list'+l+'" class="col-xs-12 list" data-apiid="'+listsOfCards[l].id+'" ondrop="drop(event)" ondragover="allowDrop(event)"><span>'+listsOfCards[l].name+'</span></div>')
             var cardsInList = listsOfCards[l].cards
             for (c=0; c < cardsInList.length; c++){
               //for compatibility with todoist create a key called 'content' equal to card name and add card to taskList. Also add project name and project ID to the task
               cardsInList[c].content = cardsInList[c].name;
               cardsInList[c].project_id = projectID;
               taskList.push(cardsInList[c]);
-              var $newcard = $('<div class="col-xs-12 task">'+cardsInList[c].content+'</div>');
+              var $newcard = $('<div class="col-xs-12 task" id="card'+c+'inlist'+l+'" data-apiid="'+cardsInList[c].id+'" draggable="true" ondragstart="drag(event)">'+cardsInList[c].content+'</div>');
               $newlist.append($newcard);
               }
             $projectArea.append($newlist);
@@ -117,3 +119,50 @@ block content
         }
       });
     });
+    //Drag and drop functions- eventually move to a seperate Jade script
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      var dataToPass = {
+        id: ev.target.id,
+        apiid: ev.target.dataset.apiid
+      }
+      var jsonDataToPass = JSON.stringify(dataToPass);
+      ev.dataTransfer.setData("text", jsonDataToPass);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      var passedData = JSON.parse(ev.dataTransfer.getData("text"));
+      console.log('this was passed: ', passedData)
+      var droppedID = passedData.id;
+      var droppedAPIID = passedData.apiid;
+
+      var $dropped = $('#'+droppedID);
+      var $droppedOn = $('#'+ev.target.id);
+
+      //prevent appending to tasks
+      if ($droppedOn.hasClass("task")){
+        $droppedOn = ev.target.parentElement
+        } else{
+        $droppedOn = ev.target
+      }
+
+      $.ajax({
+        url: '/api/trello/movecard',
+        method: 'POST',
+        data: {
+          cardID: droppedAPIID,
+          moveToListID: $droppedOn.dataset.apiid
+        },
+        success: function(res){
+          //move DOM item only once has moved in Trello
+          $dropped.appendTo($droppedOn)
+        },
+        error: function(res){
+          console.log('ajax error')
+        }
+      })
+    }
