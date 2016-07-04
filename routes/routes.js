@@ -10,20 +10,20 @@ module.exports = function(app, passport){
   });
 
   // Trello Links
-  app.get('/auth/trello', passport.authenticate('trello'));
+  app.get('/auth/trello', loggedInTrello, passport.authenticate('trello'));
+    // req.user - will exist
+    // load user orders and render them
 
-  //THIS WAS A TEST TO SEE IF COULD CONDITIONALLY RUN PASSPORT- VERY STANGE RESULT WITH the function running before it was called!?!?
-  // app.get('/auth/trello', authenticated('trello'));
-
-  // function authenticated(client){
-  //   console.log('CHECKING AUTH: ', backendUser)
-  //   if (backendUser){
-  //     console.log('THERE IS A BACKEND USER HERE AND HE IS: ', backendUser)
-  //     res.redirect('/trello')
-  //   } else{
-  //     return passport.authenticate('trello');
-  //   }
-  // };
+  function loggedInTrello(req, res, next) {
+    console.log('this is user', req.user)
+    if (!req.user) {
+        next();
+    } else if (!req.user.trello || req.user.trello == '{}') {
+      next();
+    } else{
+      res.redirect('/trello');
+    }
+  }
 
   app.get('/auth/trello/callback', passport.authenticate('trello', {successRedirect: '/trello', failureRedirect: '/'}));
 
@@ -85,7 +85,22 @@ module.exports = function(app, passport){
   // Todoist links
 
   //Authentication
-  app.get('/auth/todoist', passport.authenticate('todoist', { scope: 'data:read_write'}));
+
+  app.get('/auth/todoist', loggedInTodoist, passport.authenticate('todoist', { scope: 'data:read_write'}));
+    // req.user - will exist
+    // load user orders and render them
+
+  function loggedInTodoist(req, res, next) {
+    console.log('this is user', req.user)
+    if (!req.user) {
+        next();
+    } else if (!req.user.todoist || req.user.todoist == '{}') {
+      next();
+    } else{
+      res.redirect('/todoist');
+    }
+  }
+
   app.get('/auth/todoist/callback', passport.authenticate('todoist', {successRedirect: '/todoist', failureRedirect: '/'}));
 
   //Load Todoist Pages
