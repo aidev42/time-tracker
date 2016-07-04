@@ -8,7 +8,7 @@ A plugin to existing 'to do' and workflow management systems to help better keep
 - [Trello] (https://trello.com/)
 
 ## Features and How to use?
-To use, simply login via your existing Todoist or Trello account via Oauth handled by [Passport.js] (http://passportjs.org/). On the 'Main' page you will see all your current projects/boards (Todoist/Trello). By clicking a project/board, you will see all the current tasks/cards associated with that project/board. By clicking a task/card you set it to the currently working task, which does three things:
+To use, simply login via your existing Todoist or Trello account via Oauth handled by [Passport.js] (http://passportjs.org/). On the 'Work' page you will see all your current projects/boards (Todoist/Trello). By clicking a project/board, you will see all the current tasks/cards associated with that project/board. By clicking a task/card you set it to the currently working task, which does three things:
 1) It begins a timer that tracks how long the task takes to complete
 2) If no estimate already exists it prompts the user to estimate how long task will take to complete in minutes
 3) For Trello, it moves the card to your designated 'working' or 'to do' list in your board
